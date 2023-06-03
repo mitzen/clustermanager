@@ -24,6 +24,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+
 	clusterv1 "cdx.foc/clusterwatch/api/v1"
 )
 
@@ -51,8 +55,29 @@ func (r *ClusterWatchNamespaceReconciler) Reconcile(ctx context.Context, req ctr
 	log.Info("we are good")
 
 	var cns clusterv1.ClusterWatchNamespace
+
 	if err := r.Get(ctx, req.NamespacedName, &cns); err != nil {
 		log.Error(err, "unable to fetch cluster watcher instance")
+	}
+
+	config, err := rest.InClusterConfig()
+	if err != nil {
+		log.Error(err, "Fault in rest.InClusterConfig")
+	}
+	// creates the clientsets
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		log.Error(err, "Error settign up clientset")
+	}
+
+	// Get the namespace with proper annotations //
+	pods, err := clientset.CoreV1().Pods("").Lisst(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		log.Error(err, "Error getting namespace")
+	}
+
+	if pods != nil {
+		log.Info("pod info ")
 	}
 
 	return ctrl.Result{}, nil
