@@ -18,15 +18,17 @@ package controller
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 
 	clusterv1 "cdx.foc/clusterwatch/api/v1"
 )
@@ -52,7 +54,7 @@ type ClusterWatchNamespaceReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.4/pkg/reconcile
 func (r *ClusterWatchNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	log := log.FromContext(ctx)
-	log.Info("we are good")
+	log.Info("Reconciling ClusterWatchNamespace")
 
 	var cns clusterv1.ClusterWatchNamespace
 
@@ -60,20 +62,42 @@ func (r *ClusterWatchNamespaceReconciler) Reconcile(ctx context.Context, req ctr
 		log.Error(err, "unable to fetch cluster watcher instance")
 	}
 
-	config, err := rest.InClusterConfig()
+	// InClusterConfig
+	// config, err := rest.InClusterConfig()
+	// if err != nil {
+	// 	log.Error(err, "Fault in rest.InClusterConfig")
+	// }
+
+	home, _ := os.UserHomeDir()
+	kubeConfigPath := filepath.Join(home, ".kube", "config")
+
+	config, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
 	if err != nil {
-		log.Error(err, "Fault in rest.InClusterConfig")
-	}
-	// creates the clientsets
-	clientset, err := kubernetes.NewForConfig(config)
-	if err != nil {
-		log.Error(err, "Error settign up clientset")
+		panic(err)
 	}
 
+	client := kubernetes.NewForConfigOrDie(config)
+
+	// creates the clientset
+	// clientset, err := kubernetes.NewForConfig(config)
+	// if err != nil {
+	// 	log.Error(err, "Error setup clientset")
+	// }
+
 	// Get the namespace with proper annotations //
-	pods, err := clientset.CoreV1().Pods("").Lisst(context.TODO(), metav1.ListOptions{})
+
+	nslist, err := client.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		log.Error(err, "Error getting namespace")
+	}
+
+	for _, s := range nslist.Items {
+		log.Info(s.Name)
+	}
+
+	pods, err := client.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		log.Error(err, "Error getting pods")
 	}
 
 	if pods != nil {
