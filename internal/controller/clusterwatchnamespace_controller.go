@@ -18,8 +18,10 @@ package controller
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
@@ -32,6 +34,9 @@ import (
 
 	clusterv1 "cdx.foc/clusterwatch/api/v1"
 )
+
+const ClusterInformalMarker string = ""
+const MaxAllowedDaysWithoutRaisingPR float64 = 20
 
 // ClusterWatchNamespaceReconciler reconciles a ClusterWatchNamespace object
 type ClusterWatchNamespaceReconciler struct {
@@ -93,18 +98,28 @@ func (r *ClusterWatchNamespaceReconciler) Reconcile(ctx context.Context, req ctr
 
 	for _, s := range nslist.Items {
 		log.Info(s.Name)
+
+		_, ok := s.Annotations[ClusterInformalMarker]
+
+		// currentTime := time.Now()
+		timeDrift := time.Now().Sub(s.CreationTimestamp.Time).Hours()
+		fmt.Printf("difference %f", timeDrift/24)
+		log.Info(s.CreationTimestamp.String())
+
+		if timeDrift > MaxAllowedDaysWithoutRaisingPR {
+			// We need to remove the namespace
+		}
+
+		if ok {
+			// Get creation time
+			log.Info(s.CreationTimestamp.String())
+			// send out email
+		}
 	}
 
-	pods, err := client.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		log.Error(err, "Error getting pods")
-	}
-
-	if pods != nil {
-		log.Info("pod info ")
-	}
-
-	return ctrl.Result{}, nil
+	var syncPeriod = 300 * time.Second
+	scheduledResult := ctrl.Result{RequeueAfter: syncPeriod}
+	return scheduledResult, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
