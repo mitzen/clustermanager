@@ -1,0 +1,12 @@
+apiVersion: cluster.cdx.foc/v1
+kind: ClusterWatchNamespace
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterwatchnamespace
+    app.kubernetes.io/instance: clusterwatchnamespace-sample
+    app.kubernetes.io/part-of: clustermanager
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: clustermanager
+  name: clusterwatchnamespace-sample
+spec:
+  # TODO(user): Add fields here
