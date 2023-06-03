@@ -47,8 +47,13 @@ type ClusterWatchNamespaceReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.4/pkg/reconcile
 func (r *ClusterWatchNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := log.FromContext(ctx)
-	logger.Info("we are good")
+	log := log.FromContext(ctx)
+	log.Info("we are good")
+
+	var cns clusterv1.ClusterWatchNamespace
+	if err := r.Get(ctx, req.NamespacedName, &cns); err != nil {
+		log.Error(err, "unable to fetch cluster watcher instance")
+	}
 
 	return ctrl.Result{}, nil
 }
