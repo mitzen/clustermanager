@@ -92,3 +92,33 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
+
+--------------------------------------------------------
+
+ make install manifest
+
+ // install the crds 
+ kustomize build config/crd | kubectl apply -f -
+
+ // create instance of the kind
+ 
+ kubectl apply -f .\config\samples\cluster_v1_clusterwatchnamespace.yaml
+
+ please use the following lanch.json 
+
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Package",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "./clustermanager/cmd/main.go"
+        }
+    ]
+}
+
