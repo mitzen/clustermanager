@@ -18,11 +18,11 @@ package controller
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path/filepath"
 	"time"
 
+	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -35,13 +35,14 @@ import (
 	clusterv1 "cdx.foc/clusterwatch/api/v1"
 )
 
-const ClusterInformalMarker string = ""
+const NamespaceAutomationMarker string = "backstage-namespace-pr"
 const MaxAllowedDaysWithoutRaisingPR float64 = 20
 
 // ClusterWatchNamespaceReconciler reconciles a ClusterWatchNamespace object
 type ClusterWatchNamespaceReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
+	log    logr.Logger
 }
 
 //+kubebuilder:rbac:groups=cluster.cdx.foc,resources=clusterwatchnamespaces,verbs=get;list;watch;create;update;patch;delete
@@ -57,15 +58,26 @@ type ClusterWatchNamespaceReconciler struct {
 //
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.4/pkg/reconcile
+
 func (r *ClusterWatchNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	log := log.FromContext(ctx)
-	log.Info("Reconciling ClusterWatchNamespace")
+
+	r.log = log.FromContext(ctx)
+	r.log.Info("Reconciling clusterwatchnamespace at: %s", time.Now().String())
 
 	var cns clusterv1.ClusterWatchNamespace
 
 	if err := r.Get(ctx, req.NamespacedName, &cns); err != nil {
-		log.Error(err, "unable to fetch cluster watcher instance")
+		r.log.Error(err, "Unable to obtain crd created for cluster watcher instance")
+	} else {
+		r.GetNamespaceWithRequiredPRTag()
 	}
+
+	var syncPeriod = 300 * time.Second
+	scheduledResult := ctrl.Result{RequeueAfter: syncPeriod}
+	return scheduledResult, nil
+}
+
+func (r *ClusterWatchNamespaceReconciler) GetNamespaceWithRequiredPRTag() {
 
 	// InClusterConfig
 	// config, err := rest.InClusterConfig()
@@ -90,36 +102,34 @@ func (r *ClusterWatchNamespaceReconciler) Reconcile(ctx context.Context, req ctr
 	// }
 
 	// Get the namespace with proper annotations //
-
 	nslist, err := client.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
+
 	if err != nil {
-		log.Error(err, "Error getting namespace")
+		r.log.Error(err, "Error listing namespace in the cluster.")
 	}
 
 	for _, s := range nslist.Items {
-		log.Info(s.Name)
 
-		_, ok := s.Annotations[ClusterInformalMarker]
+		r.log.Info("Checking annotation on namespace: [%s]", s.Name)
 
-		// currentTime := time.Now()
-		timeDrift := time.Now().Sub(s.CreationTimestamp.Time).Hours()
-		fmt.Printf("difference %f", timeDrift/24)
-		log.Info(s.CreationTimestamp.String())
-
-		if timeDrift > MaxAllowedDaysWithoutRaisingPR {
-			// We need to remove the namespace
-		}
+		_, ok := s.Annotations[NamespaceAutomationMarker]
 
 		if ok {
 			// Get creation time
-			log.Info(s.CreationTimestamp.String())
-			// send out email
+			r.log.Info(s.CreationTimestamp.String())
+			timeDrift := time.Now().Sub(s.CreationTimestamp.Time).Hours()
+			r.log.Info(s.CreationTimestamp.String())
+
+			if timeDrift > MaxAllowedDaysWithoutRaisingPR {
+				r.log.Info("namespace has exceed max number of days: [%s]", s.Name)
+
+				// We need to remove the namespace
+				// maybe just send email would be adequote
+			} else {
+				r.log.Info("namespace with annotation found but doesn't match the max days: [%s]", s.Name)
+			}
 		}
 	}
-
-	var syncPeriod = 300 * time.Second
-	scheduledResult := ctrl.Result{RequeueAfter: syncPeriod}
-	return scheduledResult, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
