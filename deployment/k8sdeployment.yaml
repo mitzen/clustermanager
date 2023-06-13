@@ -2,10 +2,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cdx-cluster-manager
+  namespace: cdx-system
   labels:
     app: cdx-cluster-manager
 spec:
   replicas: 1
+  serviceAccountName: cmserviceaccount
   selector:
     matchLabels:
       app: cdx-cluster-manager
