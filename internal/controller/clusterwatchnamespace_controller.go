@@ -18,14 +18,12 @@ package controller
 
 import (
 	"context"
-	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -80,18 +78,18 @@ func (r *ClusterWatchNamespaceReconciler) Reconcile(ctx context.Context, req ctr
 func (r *ClusterWatchNamespaceReconciler) GetNamespaceWithRequiredPRTag() {
 
 	// InClusterConfig
-	// config, err := rest.InClusterConfig()
-	// if err != nil {
-	// 	log.Error(err, "Fault in rest.InClusterConfig")
-	// }
-
-	home, _ := os.UserHomeDir()
-	kubeConfigPath := filepath.Join(home, ".kube", "config")
-
-	config, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
+	config, err := rest.InClusterConfig()
 	if err != nil {
-		panic(err)
+		r.log.Error(err, "Fault in rest.InClusterConfig")
 	}
+
+	// home, _ := os.UserHomeDir()
+	// kubeConfigPath := filepath.Join(home, ".kube", "config")
+
+	// config, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
 	client := kubernetes.NewForConfigOrDie(config)
 
