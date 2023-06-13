@@ -76,37 +76,23 @@ make manifests
 
 More information can be found via the [Kubebuilder Documentation](https://book.kubebuilder.io/introduction.html)
 
-## License
 
-Copyright 2023.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-x   
---------------------------------------------------------
+ To build 
+ -------------------------------------------------------------
 
  go build -o bin/manager cmd/main.go
 
+ // only run from the docker image
  make install manifest
 
  // install the crds 
  kustomize build config/crd | kubectl apply -f -
 
  // create instance of the kind
- 
  kubectl apply -f .\config\samples\cluster_v1_clusterwatchnamespace.yaml
 
- please use the following lanch.json 
-
+please use the following lanch.json 
 {
     // Use IntelliSense to learn about possible attributes.
     // Hover to view descriptions of existing attributes.
