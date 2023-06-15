@@ -60,7 +60,7 @@ type ClusterWatchNamespaceReconciler struct {
 func (r *ClusterWatchNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 
 	r.log = log.FromContext(ctx)
-	r.log.Info("Reconciling clusterwatchnamespace at: %s", time.Now().String())
+	r.log.Info("Reconciling clusterwatchnamespace:", time.Now().String())
 
 	var cns clusterv1.ClusterWatchNamespace
 
@@ -108,7 +108,7 @@ func (r *ClusterWatchNamespaceReconciler) GetNamespaceWithRequiredPRTag() {
 
 	for _, s := range nslist.Items {
 
-		r.log.Info("Checking annotation on namespace: [%s]", s.Name)
+		r.log.Info("Checking annotation on namespace:", s.Name)
 
 		_, ok := s.Annotations[NamespaceAutomationMarker]
 
@@ -119,12 +119,12 @@ func (r *ClusterWatchNamespaceReconciler) GetNamespaceWithRequiredPRTag() {
 			r.log.Info(s.CreationTimestamp.String())
 
 			if timeDrift > MaxAllowedDaysWithoutRaisingPR {
-				r.log.Info("namespace has exceed max number of days: [%s]", s.Name)
+				r.log.Info("namespace has exceed max number of days:", s.Name)
 
 				// We need to remove the namespace
 				// maybe just send email would be adequote
 			} else {
-				r.log.Info("namespace with annotation found but doesn't match the max days: [%s]", s.Name)
+				r.log.Info("namespace with annotation found but doesn't match the max days:", s.Name)
 			}
 		}
 	}
