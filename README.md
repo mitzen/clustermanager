@@ -109,5 +109,8 @@ please use the following lanch.json
     ]
 }
 
+kubectl auth can-i get services --as=system:serviceaccount:cdx-system:cmserviceaccount -n cdx-system
 
+
+kubectl auth can-i list clusterwatchnamespaces --as=system:serviceaccount:cdx-system:cmserviceaccount -n cdx-system
 

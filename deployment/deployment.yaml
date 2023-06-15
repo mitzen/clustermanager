@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cdx-cluster-manager
+  namespace: cdx-system
+  labels:
+    app: cdx-cluster-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cdx-cluster-manager
+  template:
+    metadata:
+      labels:
+        app: cdx-cluster-manager
+    spec:
+      serviceAccountName: cmserviceaccount
+      containers:
+      - name: cdx-cluster-manager
+        image: kepung/cdx-cluster-manager:1.0.0
+        # ports:
+        # - containerPort: 80

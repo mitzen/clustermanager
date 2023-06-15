@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cdx-cluster-manager
+  namespace: cdx-system
+  labels:
+    app: cdx-cluster-manager
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cdx-cluster-manager
+  template:
+    metadata:
+      labels:
+        app: cdx-cluster-manager
+    spec:
+      serviceAccountName: cmserviceaccount
+      containers:
+      - name: cdx-cluster-manager
+        image: kepung/cdx-cluster-manager:1.0.0
+        imagePullPolicy: Always
+        # ports:
+        # - containerPort: 80
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:  
+  name: cmserviceaccount
+  namespace: cdx-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  namespace: cdx-system
+  name: cm-role
+rules:
+- apiGroups: ["", "cluster.cdx.foc"] # "" indicates the core API group
+  resources: ["namespaces", "replicasets", "deployments", "endpoints", "secrets", "pods", "clusterwatchnamespaces", "clusterwatchnamespace"]
+  verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: view-cluster-cm-cdx-manager
+  #namespace: cdx-system
+subjects:
+- kind: ServiceAccount
+  name: cmserviceaccount
+  namespace: cdx-system
+roleRef:
+  kind: ClusterRole
+  name: cm-role
+  apiGroup: rbac.authorization.k8s.io
