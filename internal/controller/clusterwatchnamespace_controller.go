@@ -60,7 +60,7 @@ type ClusterWatchNamespaceReconciler struct {
 func (r *ClusterWatchNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 
 	r.log = log.FromContext(ctx)
-	r.log.Info("Reconciling clusterwatchnamespace:", time.Now().String())
+	r.log.Info("Reconciling clusterwatchnamespace")
 
 	var cns clusterv1.ClusterWatchNamespace
 
