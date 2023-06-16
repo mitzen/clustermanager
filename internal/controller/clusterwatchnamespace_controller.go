@@ -86,7 +86,6 @@ func (r *ClusterWatchNamespaceReconciler) GetNamespaceWithRequiredPRTag() {
 
 	// home, _ := os.UserHomeDir()
 	// kubeConfigPath := filepath.Join(home, ".kube", "config")
-
 	// config, err := clientcmd.BuildConfigFromFlags("", kubeConfigPath)
 	// if err != nil {
 	// 	panic(err)
@@ -115,7 +114,7 @@ func (r *ClusterWatchNamespaceReconciler) GetNamespaceWithRequiredPRTag() {
 
 		if ok {
 
-			r.log.Info("Found a namespace that has a label: backstage-pr-automation")
+			r.log.Info(fmt.Sprintf("Found a namespace with label: backstage-pr-automation"))
 			if labelValue == "required" {
 				// Get creation time //
 				r.log.Info(s.CreationTimestamp.String())
@@ -134,7 +133,6 @@ func (r *ClusterWatchNamespaceReconciler) GetNamespaceWithRequiredPRTag() {
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *ClusterWatchNamespaceReconciler) SetupWithManager(mgr ctrl.Manager) error {
-
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&clusterv1.ClusterWatchNamespace{}).
 		Complete(r)

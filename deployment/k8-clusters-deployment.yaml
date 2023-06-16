@@ -18,7 +18,7 @@ spec:
       serviceAccountName: cmserviceaccount
       containers:
       - name: cdx-cluster-manager
-        image: kepung/cdx-cluster-manager:1.0.0
+        image: kepung/cdx-cluster-manager:1.0.5
         imagePullPolicy: Always
         # ports:
         # - containerPort: 80
