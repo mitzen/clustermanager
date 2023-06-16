@@ -109,13 +109,9 @@ func (r *ClusterWatchNamespaceReconciler) GetNamespaceWithRequiredPRTag() {
 
 	for _, s := range nslist.Items {
 
-		r.log.Info("Checking label on namespace")
-		r.log.Info(s.Name)
+		r.log.Info(fmt.Sprintf("Performing checks on namespace label: %s", s.Name))
 
 		labelValue, ok := s.Labels[NamespaceAutomationMarker]
-
-		r.log.Info("showing label")
-		r.log.Info(labelValue)
 
 		if ok {
 
@@ -124,16 +120,12 @@ func (r *ClusterWatchNamespaceReconciler) GetNamespaceWithRequiredPRTag() {
 				// Get creation time //
 				r.log.Info(s.CreationTimestamp.String())
 				timeDrift := time.Now().Sub(s.CreationTimestamp.Time).Hours() / 24
-				r.log.Info("TimeDiff / Days")
-				r.log.Info(fmt.Sprintf("%f", timeDrift))
+				r.log.Info(fmt.Sprintf("TimeDiff %f", timeDrift))
 
 				if timeDrift > MaxAllowedDaysWithoutRaisingPR {
-					r.log.Info("Namespace has exceeded max number of days:")
-
-					// We need to remove the namespace
-					// maybe just send email would be adequote
+					r.log.Info("Namespace has exceeded max number of days")
 				} else {
-					r.log.Info("Namespace with annotation found but doesn't match the max days:")
+					r.log.Info("Namespace with matching label was found but does not match the max days:")
 				}
 			}
 		}
