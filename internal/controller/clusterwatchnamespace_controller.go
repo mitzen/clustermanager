@@ -18,6 +18,7 @@ package controller
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -122,8 +123,9 @@ func (r *ClusterWatchNamespaceReconciler) GetNamespaceWithRequiredPRTag() {
 			if labelValue == "required" {
 				// Get creation time //
 				r.log.Info(s.CreationTimestamp.String())
-				timeDrift := time.Now().Sub(s.CreationTimestamp.Time).Hours()
-				r.log.Info(s.CreationTimestamp.String())
+				timeDrift := time.Now().Sub(s.CreationTimestamp.Time).Hours() / 24
+				r.log.Info("TimeDiff / Days")
+				r.log.Info(fmt.Sprintf("%f", timeDrift))
 
 				if timeDrift > MaxAllowedDaysWithoutRaisingPR {
 					r.log.Info("Namespace has exceeded max number of days:")
