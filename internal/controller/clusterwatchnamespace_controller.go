@@ -108,10 +108,13 @@ func (r *ClusterWatchNamespaceReconciler) GetNamespaceWithRequiredPRTag() {
 
 	for _, s := range nslist.Items {
 
-		r.log.Info("Checking annotation on namespace")
+		r.log.Info("Checking label on namespace")
 		r.log.Info(s.Name)
 
 		labelValue, ok := s.Labels[NamespaceAutomationMarker]
+
+		r.log.Info("showing label")
+		r.log.Info(labelValue)
 
 		if ok {
 
