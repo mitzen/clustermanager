@@ -126,12 +126,12 @@ func (r *ClusterWatchNamespaceReconciler) GetNamespaceWithRequiredPRTag() {
 				r.log.Info(s.CreationTimestamp.String())
 
 				if timeDrift > MaxAllowedDaysWithoutRaisingPR {
-					r.log.Info("Namespace has exceeded max number of days:", s.Name)
+					r.log.Info("Namespace has exceeded max number of days:")
 
 					// We need to remove the namespace
 					// maybe just send email would be adequote
 				} else {
-					r.log.Info("Namespace with annotation found but doesn't match the max days:", s.Name)
+					r.log.Info("Namespace with annotation found but doesn't match the max days:")
 				}
 			}
 		}
