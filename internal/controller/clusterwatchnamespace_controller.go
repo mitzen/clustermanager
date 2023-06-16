@@ -36,12 +36,14 @@ import (
 
 const NamespaceAutomationMarker string = "backstage-namespace-pr"
 const MaxAllowedDaysWithoutRaisingPR float64 = 20
+const LabelMatchingValue string = "required"
 
 // ClusterWatchNamespaceReconciler reconciles a ClusterWatchNamespace object
 type ClusterWatchNamespaceReconciler struct {
 	client.Client
-	Scheme *runtime.Scheme
-	log    logr.Logger
+	Scheme                   *runtime.Scheme
+	log                      logr.Logger
+	namespaceNeedsReviewList []string
 }
 
 //+kubebuilder:rbac:groups=cluster.cdx.foc,resources=clusterwatchnamespaces,verbs=get;list;watch;create;update;patch;delete
@@ -61,16 +63,16 @@ type ClusterWatchNamespaceReconciler struct {
 func (r *ClusterWatchNamespaceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 
 	r.log = log.FromContext(ctx)
-	r.log.Info("Reconciling clusterwatchnamespace")
 
 	var cns clusterv1.ClusterWatchNamespace
 
 	if err := r.Get(ctx, req.NamespacedName, &cns); err != nil {
-		r.log.Error(err, "Unable to obtain crd created for cluster watcher instance")
+		r.log.Error(err, "Unable to obtain crds created for cdx cluster watcher instance.")
 	} else {
 		r.GetNamespaceWithRequiredPRTag()
 	}
 
+	// Next cycle wait time //
 	var syncPeriod = 300 * time.Second
 	scheduledResult := ctrl.Result{RequeueAfter: syncPeriod}
 	return scheduledResult, nil
@@ -108,23 +110,21 @@ func (r *ClusterWatchNamespaceReconciler) GetNamespaceWithRequiredPRTag() {
 
 	for _, s := range nslist.Items {
 
-		r.log.Info(fmt.Sprintf("Performing checks on namespace label: %s", s.Name))
-
 		labelValue, ok := s.Labels[NamespaceAutomationMarker]
 
 		if ok {
 
-			r.log.Info(fmt.Sprintf("Found a namespace with label: backstage-pr-automation"))
-			if labelValue == "required" {
+			if labelValue == LabelMatchingValue {
+				r.log.Info(fmt.Sprintf("Matching namespace found, checking namespace creation time: %s", s.Name))
 				// Get creation time //
 				r.log.Info(s.CreationTimestamp.String())
-				timeDrift := time.Now().Sub(s.CreationTimestamp.Time).Hours() / 24
-				r.log.Info(fmt.Sprintf("TimeDiff %f", timeDrift))
+				timeDriftDays := time.Now().Sub(s.CreationTimestamp.Time).Hours() / 24
 
-				if timeDrift > MaxAllowedDaysWithoutRaisingPR {
-					r.log.Info("Namespace has exceeded max number of days")
+				if timeDriftDays > MaxAllowedDaysWithoutRaisingPR {
+					r.log.Info(fmt.Sprintf("Namespace has exceeded max number of days. TimeDiff %f", timeDriftDays))
+					r.namespaceNeedsReviewList = append(r.namespaceNeedsReviewList, s.Name)
 				} else {
-					r.log.Info("Namespace with matching label was found but does not match the max days:")
+					r.log.Info(fmt.Sprintf("Namespace found but does not meet the PR requirement criteria of %f", MaxAllowedDaysWithoutRaisingPR))
 				}
 			}
 		}
