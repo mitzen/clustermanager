@@ -8,7 +8,7 @@ import (
 	"net/http"
 )
 
-const slackEndpoint string = "https://hooks.slack.com/services/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"
+const slackEndpoint string = ""
 const applicationJson string = "application/json"
 
 type SlackMessenger struct {
