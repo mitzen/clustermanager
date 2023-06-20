@@ -25,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -121,8 +122,13 @@ func (r *ClusterWatchNamespaceReconciler) GetNamespaceWithRequiredPRTag() {
 				timeDriftDays := time.Now().Sub(s.CreationTimestamp.Time).Hours() / 24
 
 				if timeDriftDays > MaxAllowedDaysWithoutRaisingPR {
-					r.log.Info(fmt.Sprintf("Namespace has exceeded max number of days. TimeDiff %f", timeDriftDays))
+					logMessageNamespaceExceeded := fmt.Sprintf("%s namespace has exceeded max number of days. TimeDiff %f", s.Name, timeDriftDays)
+
+					r.log.Info(logMessageNamespaceExceeded)
 					r.namespaceNeedsReviewList = append(r.namespaceNeedsReviewList, s.Name)
+					// send message to a webhook //
+					sm := SlackMessenger{}
+					sm.SendMessage(logMessageNamespaceExceeded)
 				} else {
 					r.log.Info(fmt.Sprintf("Namespace found but does not meet the PR requirement criteria of %f", MaxAllowedDaysWithoutRaisingPR))
 				}
