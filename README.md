@@ -77,6 +77,14 @@ make manifests
 More information can be found via the [Kubebuilder Documentation](https://book.kubebuilder.io/introduction.html)
 
 
+kubebuilder creation command
+--------------------------------------------------------
+kubebuilder create api --group cluster.cdx.foc --version v1 --kind ClusterWatchNamespace
+
+
+mockgen -source=C:\Work\cdx\macer\clustermanager\internal\controller\messenger.go -destination=C:\Work\cdx\macer\clustermanager\mocks\messenger_mock.go -package=mocks
+
+--------------------------------------------------------
 
  To build 
  -------------------------------------------------------------

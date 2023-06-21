@@ -70,7 +70,7 @@ func (r *ClusterWatchNamespaceReconciler) Reconcile(ctx context.Context, req ctr
 	if err := r.Get(ctx, req.NamespacedName, &cns); err != nil {
 		r.log.Error(err, "Unable to obtain crds created for cdx cluster watcher instance.")
 	} else {
-		r.GetNamespaceWithRequiredPRTag()
+		r.GetNamespaceWithRequiredPRTag(cns)
 	}
 
 	// Next cycle wait time //
@@ -79,7 +79,7 @@ func (r *ClusterWatchNamespaceReconciler) Reconcile(ctx context.Context, req ctr
 	return scheduledResult, nil
 }
 
-func (r *ClusterWatchNamespaceReconciler) GetNamespaceWithRequiredPRTag() {
+func (r *ClusterWatchNamespaceReconciler) GetNamespaceWithRequiredPRTag(cns clusterv1.ClusterWatchNamespace) {
 
 	// InClusterConfig
 	config, err := rest.InClusterConfig()
@@ -121,14 +121,24 @@ func (r *ClusterWatchNamespaceReconciler) GetNamespaceWithRequiredPRTag() {
 				r.log.Info(s.CreationTimestamp.String())
 				timeDriftDays := time.Now().Sub(s.CreationTimestamp.Time).Hours() / 24
 
-				if timeDriftDays > MaxAllowedDaysWithoutRaisingPR {
+				var maxDaysPR float64 = 0
+
+				if cns.Spec.RequiredPRNamespaceMaxWaitDays == 0 {
+					maxDaysPR = MaxAllowedDaysWithoutRaisingPR
+				} else {
+					maxDaysPR = cns.Spec.RequiredPRNamespaceMaxWaitDays
+				}
+
+				if timeDriftDays > maxDaysPR {
 					logMessageNamespaceExceeded := fmt.Sprintf("%s namespace has exceeded max number of days. TimeDiff %f", s.Name, timeDriftDays)
 
 					r.log.Info(logMessageNamespaceExceeded)
 					r.namespaceNeedsReviewList = append(r.namespaceNeedsReviewList, s.Name)
+
 					// send message to a webhook //
-					sm := SlackMessenger{}
-					sm.SendMessage(logMessageNamespaceExceeded)
+					sm := NewSlackMessenger(cns.Spec.NotificationWebHookEndpoint)
+					nw := NewNotificationWorker(sm)
+					nw.SendMessage(logMessageNamespaceExceeded)
 				} else {
 					r.log.Info(fmt.Sprintf("Namespace found but does not meet the PR requirement criteria of %f", MaxAllowedDaysWithoutRaisingPR))
 				}
