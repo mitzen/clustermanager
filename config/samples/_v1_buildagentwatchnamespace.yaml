@@ -1,0 +1,12 @@
+apiVersion: cdx.foc/v1
+kind: BuildAgentWatchNamespace
+metadata:
+  labels:
+    app.kubernetes.io/name: buildagentwatchnamespace
+    app.kubernetes.io/instance: buildagentwatchnamespace-sample
+    app.kubernetes.io/part-of: clustermanager
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: clustermanager
+  name: buildagentwatchnamespace-sample
+spec:
+  # TODO(user): Add fields here

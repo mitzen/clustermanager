@@ -1,0 +1,27 @@
+# permissions for end users to view buildagentwatchnamespaces.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: buildagentwatchnamespace-viewer-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: clustermanager
+    app.kubernetes.io/part-of: clustermanager
+    app.kubernetes.io/managed-by: kustomize
+  name: buildagentwatchnamespace-viewer-role
+rules:
+- apiGroups:
+  - cdx.foc
+  resources:
+  - buildagentwatchnamespaces
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - cdx.foc
+  resources:
+  - buildagentwatchnamespaces/status
+  verbs:
+  - get

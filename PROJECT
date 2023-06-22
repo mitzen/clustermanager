@@ -5,6 +5,7 @@
 domain: cdx.foc
 layout:
 - go.kubebuilder.io/v4
+multigroup: true
 projectName: clustermanager
 repo: cdx.foc/clusterwatch
 resources:
@@ -15,6 +16,14 @@ resources:
   domain: cdx.foc
   group: cluster
   kind: ClusterWatchNamespace
+  path: cdx.foc/clusterwatch/api/v1
+  version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: cdx.foc
+  kind: BuildAgentWatchNamespace
   path: cdx.foc/clusterwatch/api/v1
   version: v1
 version: "3"

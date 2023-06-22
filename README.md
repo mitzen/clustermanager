@@ -81,6 +81,9 @@ kubebuilder creation command
 --------------------------------------------------------
 kubebuilder create api --group cluster.cdx.foc --version v1 --kind ClusterWatchNamespace
 
+./kubebuilder edit --multigroup=true
+
+./kubebuilder create api --version v1 --kind BuildAgentWatchNamespace
 
 mockgen -source=C:\Work\cdx\macer\clustermanager\internal\controller\messenger.go -destination=C:\Work\cdx\macer\clustermanager\mocks\messenger_mock.go -package=mocks
 

@@ -1,4 +1,5 @@
 ## Append samples of your project ##
 resources:
 - cluster_v1_clusterwatchnamespace.yaml
+- _v1_buildagentwatchnamespace.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples

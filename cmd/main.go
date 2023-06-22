@@ -31,6 +31,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	cdxfocv1 "cdx.foc/clusterwatch/api/v1"
 	clusterv1 "cdx.foc/clusterwatch/api/v1"
 	"cdx.foc/clusterwatch/internal/controller"
 	//+kubebuilder:scaffold:imports
@@ -45,6 +46,7 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(clusterv1.AddToScheme(scheme))
+	utilruntime.Must(cdxfocv1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -97,6 +99,13 @@ func main() {
 		Scheme: mgr.GetScheme(),
 	}).SetupWithManager(mgr); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "ClusterWatchNamespace")
+		os.Exit(1)
+	}
+	if err = (&controller.BuildAgentWatchNamespaceReconciler{
+		Client: mgr.GetClient(),
+		Scheme: mgr.GetScheme(),
+	}).SetupWithManager(mgr); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "BuildAgentWatchNamespace")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder
