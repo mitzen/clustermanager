@@ -36,9 +36,12 @@ spec:
           spec:
             description: ClusterWatchNamespaceSpec defines the desired state of ClusterWatchNamespace
             properties:
-              foo:
-                description: Foo is an example field of ClusterWatchNamespace. Edit
-                  clusterwatchnamespace_types.go to remove/update
+              requiredPRNamespaceMaxWaitDays:
+                description: Max number of days before a PR needs to be completed for a namespace
+                type: integer
+              
+              notificationWebHookEndpoint:
+                description: webhook endpoint for messages notification to inform users
                 type: string
             type: object
           status:
