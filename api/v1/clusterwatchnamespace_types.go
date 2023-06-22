@@ -29,8 +29,9 @@ type ClusterWatchNamespaceSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Foo is an example field of ClusterWatchNamespace. Edit clusterwatchnamespace_types.go to remove/update
-	RequiredPRNamespaceMaxWaitDays float64 `json:"requiredPRNamespaceMaxWaitDays,omitempty"`
-	NotificationWebHookEndpoint    string  `json:"notificationWebHookEndpoint,omitempty"`
+	RequiredPRNamespaceMaxWaitDays float64  `json:"requiredPRNamespaceMaxWaitDays,omitempty"`
+	NotificationWebHookEndpoint    string   `json:"notificationWebHookEndpoint,omitempty"`
+	BuildAgentNamespaces           []string `json:"buildAgentNamespaces,omitempty"`
 }
 
 // ClusterWatchNamespaceStatus defines the observed state of ClusterWatchNamespace
