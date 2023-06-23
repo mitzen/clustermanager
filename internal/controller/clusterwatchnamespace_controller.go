@@ -129,6 +129,9 @@ func (r *ClusterWatchNamespaceReconciler) GetNamespaceWithRequiredPRTag(cns clus
 					maxDaysPR = cns.Spec.RequiredPRNamespaceMaxWaitDays
 				}
 
+				sm := NewSlackMessenger(cns.Spec.NotificationWebHookEndpoint)
+				nw := NewNotificationWorker(sm)
+
 				if timeDriftDays > maxDaysPR {
 					logMessageNamespaceExceeded := fmt.Sprintf("%s namespace has exceeded max number of days. TimeDiff %f", s.Name, timeDriftDays)
 
@@ -136,11 +139,12 @@ func (r *ClusterWatchNamespaceReconciler) GetNamespaceWithRequiredPRTag(cns clus
 					r.namespaceNeedsReviewList = append(r.namespaceNeedsReviewList, s.Name)
 
 					// send message to a webhook //
-					sm := NewSlackMessenger(cns.Spec.NotificationWebHookEndpoint)
-					nw := NewNotificationWorker(sm)
 					nw.SendMessage(logMessageNamespaceExceeded)
 				} else {
-					r.log.Info(fmt.Sprintf("Namespace found but does not meet the PR requirement criteria of %f", MaxAllowedDaysWithoutRaisingPR))
+					logMessage := fmt.Sprintf("Namespace [%s] found but does not meet the PR requirement criteria of %f", s.Name, MaxAllowedDaysWithoutRaisingPR)
+
+					nw.SendMessage(logMessage)
+					r.log.Info(logMessage)
 				}
 			}
 		}
