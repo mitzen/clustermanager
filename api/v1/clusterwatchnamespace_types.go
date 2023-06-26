@@ -32,6 +32,7 @@ type ClusterWatchNamespaceSpec struct {
 	RequiredPRNamespaceMaxWaitDays float64  `json:"requiredPRNamespaceMaxWaitDays,omitempty"`
 	NotificationWebHookEndpoint    string   `json:"notificationWebHookEndpoint,omitempty"`
 	BuildAgentNamespaces           []string `json:"buildAgentNamespaces,omitempty"`
+	BuildAgentRestartMaxCount      float64  `json:"buildAgentRestartMaxCount,omitempty"`
 }
 
 // ClusterWatchNamespaceStatus defines the observed state of ClusterWatchNamespace

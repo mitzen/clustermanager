@@ -43,6 +43,16 @@ spec:
               notificationWebHookEndpoint:
                 description: webhook endpoint for messages notification to inform users
                 type: string
+
+              buildAgentNamespaces:
+                description: Target namespace to monitor for build agent that keeps on restarting 
+                type: array
+                items:
+                  type: string
+
+              buildAgentRestartMaxCount:
+                description: Max number of restart count before removing/re-provisioning the agent 
+                type: integer
             type: object
           status:
             description: ClusterWatchNamespaceStatus defines the observed state of
