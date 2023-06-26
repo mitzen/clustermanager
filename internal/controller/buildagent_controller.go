@@ -90,7 +90,8 @@ func (r *BuildAgentReconciler) InitRestartPods(cns clusterv1.ClusterWatchNamespa
 		for _, pod := range pods.Items {
 			restartCount := pod.Status.ContainerStatuses[0].RestartCount
 			if restartCount > int32(cns.Spec.BuildAgentRestartMaxCount) {
-				r.client.CoreV1().Pods(targetedNamespace).Delete(context.TODO(), pod.Name, v1.DeleteOptions{})
+				r.log.Info(fmt.Sprintf("Removing build agent: %s in namespace: %s ", pod.Name, targetedNamespace))
+				//r.client.CoreV1().Pods(targetedNamespace).Delete(context.TODO(), pod.Name, v1.DeleteOptions{})
 			}
 		}
 	}
