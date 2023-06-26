@@ -119,6 +119,10 @@ please use the following lanch.json
 
 kubectl auth can-i get services --as=system:serviceaccount:cdx-system:cmserviceaccount -n cdx-system
 
-
 kubectl auth can-i list clusterwatchnamespaces --as=system:serviceaccount:cdx-system:cmserviceaccount -n cdx-system
+
+
+docker build -t kepung/cdx-cluster-manager:1.0.6 .
+
+docker push kepung/cdx-cluster-manager:1.0.6
 
