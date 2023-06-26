@@ -37,6 +37,7 @@ type BuildAgentReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
 	log    logr.Logger
+	client *kubernetes.Clientset
 }
 
 //+kubebuilder:rbac:groups=cluster.cdx.foc,resources=clusterwatchnamespaces,verbs=get;list;watch;create;update;patch;delete
@@ -54,7 +55,6 @@ type BuildAgentReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.4/pkg/reconcile
 func (r *BuildAgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	r.log = log.FromContext(ctx)
-
 	r.log.Info("Starting up BuildAgentReconciler")
 
 	var cns clusterv1.ClusterWatchNamespace
@@ -63,35 +63,36 @@ func (r *BuildAgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		r.log.Error(err, "Unable to obtain crds created for cdx cluster watcher instance.")
 	}
 
+	r.SetupClientConfig()
+
 	r.InitRestartPods(cns)
 
 	// TODO(user): your logic here
 	return ctrl.Result{}, nil
 }
 
-func (r *BuildAgentReconciler) InitRestartPods(cns clusterv1.ClusterWatchNamespace) {
-
+func (r *BuildAgentReconciler) SetupClientConfig() {
 	configInstance := ClientConfig{}
 	config := configInstance.GetConfig()
-	client := kubernetes.NewForConfigOrDie(config)
+	r.client = kubernetes.NewForConfigOrDie(config)
+}
+
+func (r *BuildAgentReconciler) InitRestartPods(cns clusterv1.ClusterWatchNamespace) {
 
 	for _, targetedNamespace := range cns.Spec.BuildAgentNamespaces {
 
-		pods, err := client.CoreV1().Pods(targetedNamespace).List(context.TODO(), v1.ListOptions{})
+		pods, err := r.client.CoreV1().Pods(targetedNamespace).List(context.TODO(), v1.ListOptions{})
 
 		if err != nil {
 			r.log.Info(fmt.Sprintf("Unable get pods from namespace %s ", targetedNamespace))
 		}
 
 		for _, pod := range pods.Items {
-
 			restartCount := pod.Status.ContainerStatuses[0].RestartCount
 			if restartCount > int32(cns.Spec.BuildAgentRestartMaxCount) {
-				client.CoreV1().Pods(targetedNamespace).Delete(context.TODO(), pod.Name, v1.DeleteOptions{})
+				r.client.CoreV1().Pods(targetedNamespace).Delete(context.TODO(), pod.Name, v1.DeleteOptions{})
 			}
 		}
-		// get pods from namespace //
-		// restart pods if meet criteria //
 	}
 }
 
