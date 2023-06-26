@@ -18,11 +18,16 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/go-logr/logr"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
+
+	"k8s.io/client-go/kubernetes"
 
 	clusterv1 "cdx.foc/clusterwatch/api/v1"
 )
@@ -31,6 +36,7 @@ import (
 type BuildAgentReconciler struct {
 	client.Client
 	Scheme *runtime.Scheme
+	log    logr.Logger
 }
 
 //+kubebuilder:rbac:groups=cluster.cdx.foc,resources=clusterwatchnamespaces,verbs=get;list;watch;create;update;patch;delete
@@ -47,11 +53,46 @@ type BuildAgentReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.14.4/pkg/reconcile
 func (r *BuildAgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	l := log.FromContext(ctx)
+	r.log = log.FromContext(ctx)
 
-	l.Info("Starting up BuildAgentReconciler")
+	r.log.Info("Starting up BuildAgentReconciler")
+
+	var cns clusterv1.ClusterWatchNamespace
+
+	if err := r.Get(ctx, req.NamespacedName, &cns); err != nil {
+		r.log.Error(err, "Unable to obtain crds created for cdx cluster watcher instance.")
+	}
+
+	r.InitRestartPods(cns)
+
 	// TODO(user): your logic here
 	return ctrl.Result{}, nil
+}
+
+func (r *BuildAgentReconciler) InitRestartPods(cns clusterv1.ClusterWatchNamespace) {
+
+	configInstance := ClientConfig{}
+	config := configInstance.GetConfig()
+	client := kubernetes.NewForConfigOrDie(config)
+
+	for _, targetedNamespace := range cns.Spec.BuildAgentNamespaces {
+
+		pods, err := client.CoreV1().Pods(targetedNamespace).List(context.TODO(), v1.ListOptions{})
+
+		if err != nil {
+			r.log.Info(fmt.Sprintf("Unable get pods from namespace %s ", targetedNamespace))
+		}
+
+		for _, pod := range pods.Items {
+
+			restartCount := pod.Status.ContainerStatuses[0].RestartCount
+			if restartCount > int32(cns.Spec.BuildAgentRestartMaxCount) {
+				client.CoreV1().Pods(targetedNamespace).Delete(context.TODO(), pod.Name, v1.DeleteOptions{})
+			}
+		}
+		// get pods from namespace //
+		// restart pods if meet criteria //
+	}
 }
 
 // SetupWithManager sets up the controller with the Manager.
