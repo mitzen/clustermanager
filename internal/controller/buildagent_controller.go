@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/go-logr/logr"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -67,8 +68,9 @@ func (r *BuildAgentReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	r.InitRestartPods(cns)
 
-	// TODO(user): your logic here
-	return ctrl.Result{}, nil
+	var syncPeriod = 300 * time.Second
+	scheduledResult := ctrl.Result{RequeueAfter: syncPeriod}
+	return scheduledResult, nil
 }
 
 func (r *BuildAgentReconciler) SetupClientConfig() {

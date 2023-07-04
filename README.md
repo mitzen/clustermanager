@@ -98,7 +98,7 @@ mockgen -source=C:\Work\cdx\macer\clustermanager\internal\controller\messenger.g
  kustomize build config/crd | kubectl apply -f -
 
  // create instance of the kind
- kubectl apply -f .\config\samples\cluster_v1_clusterwatchnamespace.yaml
+ kubectl apply -f .\config\samples\cluster_v1_clusterwatchnamespace.yaml  -n cdx-system
 
 please use the following lanch.json 
 {
@@ -120,7 +120,6 @@ please use the following lanch.json
 kubectl auth can-i get services --as=system:serviceaccount:cdx-system:cmserviceaccount -n cdx-system
 
 kubectl auth can-i list clusterwatchnamespaces --as=system:serviceaccount:cdx-system:cmserviceaccount -n cdx-system
-
 
 docker build -t kepung/cdx-cluster-manager:1.0.6 .
 

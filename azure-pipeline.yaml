@@ -1,0 +1,47 @@
+name: $(Build.DefinitionName)-$(date:yyyyMMdd)$(rev:.r)
+
+variables:
+  - name: imageTag
+    value: "1.0.$(Build.BuildId)"
+
+resources:
+  repositories:
+    - repository: devops-templates
+      name: Automation/devops-templates
+      type: git
+      ref: refs/heads/master
+
+pool: "foc-azp-pool"
+
+trigger:
+  branches:
+    include:
+    - main
+    - master
+  paths:
+    include:
+    - Dockerfile
+
+stages:
+  - stage: BuildAndPublish
+    displayName: "Build & Publish"
+    jobs:
+      - job: TestAndPublish
+        steps:
+          
+          - template: generate-publish-docker-image.yaml
+            parameters:
+              serviceConnection: WWNZDEVTEST
+              containerRegistry: wwnzregistrydev
+              dockerFilePath: "./"
+              imageName: cdx-cluster-manager
+              imageTag: $(imageTag)
+          
+          - template: generate-publish-docker-image.yaml
+            parameters:
+              serviceConnection: WWNZPROD
+              containerRegistry: wwnzregistryprod
+              dockerFilePath: "./"
+              imageName: cdx-cluster-manager
+              imageTag: $(imageTag)
+

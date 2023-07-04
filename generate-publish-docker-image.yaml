@@ -1,0 +1,32 @@
+parameters:
+- name: serviceConnection
+  type: string
+- name: dockerFilePath
+  type: string
+- name: containerRegistry
+  type: string
+- name: imageName
+  type: string
+- name: imageTag
+  type: string
+
+steps:
+
+- task: AzureCLI@2
+  displayName: 'Build & Publish Docker Image'
+  inputs:
+    azureSubscription: '${{ parameters.serviceConnection }}'
+    failOnStandardError: true
+    scriptType: bash
+    scriptLocation: inlineScript
+    addSpnToEnvironment: true
+    inlineScript: |
+        az acr login --name ${{ parameters.containerRegistry }}
+
+        echo "Image name"
+        
+        echo ${{ parameters.containerRegistry }}.azurecr.io/${{ parameters.imageName }}:${{ parameters.imageTag }}
+
+        docker build -t ${{ parameters.containerRegistry }}.azurecr.io/${{ parameters.imageName }}:${{ parameters.imageTag }} -f ${{ parameters.dockerFilePath }}/Dockerfile ${{ parameters.dockerFilePath }}
+        
+        docker push ${{ parameters.containerRegistry }}.azurecr.io/${{ parameters.imageName }}:${{ parameters.imageTag }}
