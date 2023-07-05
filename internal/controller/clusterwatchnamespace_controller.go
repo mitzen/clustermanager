@@ -36,7 +36,7 @@ import (
 )
 
 const NamespaceAutomationMarker string = "backstage-namespace-pr"
-const MaxAllowedDaysWithoutRaisingPR float64 = 20
+const MaxAllowedDaysWithoutRaisingPR float64 = 3
 const LabelMatchingValue string = "required"
 
 // ClusterWatchNamespaceReconciler reconciles a ClusterWatchNamespace object

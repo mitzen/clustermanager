@@ -7,9 +7,9 @@ metadata:
     app.kubernetes.io/part-of: clustermanager
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/created-by: clustermanager
-  name: clusterwatchnamespace-sample
+  name: clusterwatchnamespace-config
 spec:
-  requiredPRNamespaceMaxWaitDays: 20
+  requiredPRNamespaceMaxWaitDays: 1
   notificationWebHookEndpoint: ''
   buildAgentNamespaces: 
   - 'azp-namespace'
