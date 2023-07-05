@@ -100,6 +100,8 @@ mockgen -source=C:\Work\cdx\macer\clustermanager\internal\controller\messenger.g
  // create instance of the kind
  kubectl apply -f .\config\samples\cluster_v1_clusterwatchnamespace.yaml  -n cdx-system
 
+kubectl apply -f deployment\k8-clusters-deployment.yaml
+
 please use the following lanch.json 
 {
     // Use IntelliSense to learn about possible attributes.

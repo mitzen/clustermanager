@@ -110,6 +110,12 @@ func (r *ClusterWatchNamespaceReconciler) GetNamespaceWithRequiredPRTag(cns clus
 		r.log.Error(err, "Error listing namespace in the cluster.")
 	}
 
+	maxDaysPR := cns.Spec.RequiredPRNamespaceMaxWaitDays
+
+	if maxDaysPR == 0 {
+		maxDaysPR = MaxAllowedDaysWithoutRaisingPR
+	}
+
 	for _, s := range nslist.Items {
 
 		labelValue, ok := s.Labels[NamespaceAutomationMarker]
@@ -121,14 +127,6 @@ func (r *ClusterWatchNamespaceReconciler) GetNamespaceWithRequiredPRTag(cns clus
 				// Get creation time //
 				r.log.Info(s.CreationTimestamp.String())
 				timeDriftDays := time.Now().Sub(s.CreationTimestamp.Time).Hours() / 24
-
-				var maxDaysPR float64 = 0
-
-				if cns.Spec.RequiredPRNamespaceMaxWaitDays == 0 {
-					maxDaysPR = MaxAllowedDaysWithoutRaisingPR
-				} else {
-					maxDaysPR = cns.Spec.RequiredPRNamespaceMaxWaitDays
-				}
 
 				if timeDriftDays > maxDaysPR {
 					logMessageNamespaceExceeded := fmt.Sprintf("%s namespace has exceeded max number of days. TimeDiff %f", s.Name, timeDriftDays)
