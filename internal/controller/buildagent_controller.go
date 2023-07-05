@@ -83,6 +83,8 @@ func (r *BuildAgentReconciler) InitRestartPods(cns clusterv1.ClusterWatchNamespa
 
 	for _, targetedNamespace := range cns.Spec.BuildAgentNamespaces {
 
+		r.log.Info(fmt.Sprintf("Examining pod in naemspace: [%s] ", targetedNamespace))
+
 		pods, err := r.client.CoreV1().Pods(targetedNamespace).List(context.TODO(), v1.ListOptions{})
 
 		if err != nil {
