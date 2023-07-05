@@ -18,7 +18,7 @@ spec:
       serviceAccountName: cmserviceaccount
       containers:
       - name: cdx-cluster-manager
-        image: wwnzregistrydev.azurecr.io/cdx-cluster-manager:1.0.207560
+        image: wwnzregistrydev.azurecr.io/cdx-cluster-manager:1.0.207833
         imagePullPolicy: Always
         # ports:
         # - containerPort: 80

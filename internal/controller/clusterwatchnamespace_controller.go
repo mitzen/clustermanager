@@ -70,6 +70,7 @@ func (r *ClusterWatchNamespaceReconciler) Reconcile(ctx context.Context, req ctr
 	if err := r.Get(ctx, req.NamespacedName, &cns); err != nil {
 		r.log.Error(err, "Unable to obtain crds created for cdx cluster watcher instance.")
 	} else {
+		r.log.Info(fmt.Sprintf("cns: webhook: [%s] RequiredPRNamespaceMaxWaitDays:[%f] Agent restart count:[%f]", cns.Spec.NotificationWebHookEndpoint, cns.Spec.RequiredPRNamespaceMaxWaitDays, cns.Spec.BuildAgentRestartMaxCount))
 		r.GetNamespaceWithRequiredPRTag(cns)
 	}
 
@@ -140,7 +141,7 @@ func (r *ClusterWatchNamespaceReconciler) GetNamespaceWithRequiredPRTag(cns clus
 					nw := NewNotificationWorker(sm)
 					nw.SendMessage(logMessageNamespaceExceeded)
 				} else {
-					r.log.Info(fmt.Sprintf("Namespace found but does not meet the PR requirement criteria of %f", MaxAllowedDaysWithoutRaisingPR))
+					r.log.Info(fmt.Sprintf("Namespace found %s but does not meet the PR requirement criteria of %f", s.Name, MaxAllowedDaysWithoutRaisingPR))
 				}
 			}
 		}
