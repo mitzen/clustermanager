@@ -19,6 +19,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -81,9 +82,12 @@ func (r *BuildAgentReconciler) SetupClientConfig() {
 
 func (r *BuildAgentReconciler) InitRestartPods(cns clusterv1.ClusterWatchNamespace) {
 
+	var podDeletionTaskTriggered bool = false
+	var sb strings.Builder
+
 	for _, targetedNamespace := range cns.Spec.BuildAgentNamespaces {
 
-		r.log.Info(fmt.Sprintf("Examining pod in naemspace: [%s] ", targetedNamespace))
+		r.log.Info(fmt.Sprintf("Examining pod in namespace: [%s] ", targetedNamespace))
 
 		pods, err := r.client.CoreV1().Pods(targetedNamespace).List(context.TODO(), v1.ListOptions{})
 
@@ -96,7 +100,15 @@ func (r *BuildAgentReconciler) InitRestartPods(cns clusterv1.ClusterWatchNamespa
 			if restartCount > int32(cns.Spec.BuildAgentRestartMaxCount) {
 				r.log.Info(fmt.Sprintf("Removing build agent: %s in namespace: %s ", pod.Name, targetedNamespace))
 				//r.client.CoreV1().Pods(targetedNamespace).Delete(context.TODO(), pod.Name, v1.DeleteOptions{})
+				podDeletionTaskTriggered = true
+				sb.WriteString(fmt.Sprintf(`\n namespace:%s pod:%s`, targetedNamespace, pod.Name))
 			}
+		}
+
+		if podDeletionTaskTriggered {
+			sm := NewSlackMessenger(cns.Spec.NotificationWebHookEndpoint)
+			nw := NewNotificationWorker(sm)
+			nw.SendMessage(sb.String())
 		}
 	}
 }
