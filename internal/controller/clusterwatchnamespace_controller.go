@@ -139,7 +139,7 @@ func (r *ClusterWatchNamespaceReconciler) GetNamespaceWithRequiredPRTag(cns clus
 					nw := NewNotificationWorker(sm)
 					nw.SendMessage(logMessageNamespaceExceeded)
 				} else {
-					r.log.Info(fmt.Sprintf("Namespace found %s but does not meet the PR requirement criteria of %f", s.Name, MaxAllowedDaysWithoutRaisingPR))
+					r.log.Info(fmt.Sprintf("Namespace found %s but does not meet the PR requirement criteria of %f", s.Name, maxDaysPR))
 				}
 			}
 		}
